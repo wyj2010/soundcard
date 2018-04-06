@@ -1,5 +1,6 @@
 #include "sound.h"
 #include <stdio.h>
+#include <math.h>
 
 //function definition of displayWAVheader()
 void displayWAVheader(char filename[]){
@@ -37,9 +38,10 @@ void printID(char id[]){
 The sample should be in S16_LE format, and there are 16k of them. The function processes every 200 samples and calculate their RMS values
 and render the value as a bar. */
 void displayBar(char filename[]){
-	int i;
+	int i, j;
 	FILE *fp;
-	short int samples(SAMPLERATE);
+	short int samples[SAMPLERATE];
+	double sum_200, rms_80[80], dB;
 	WAVHeader myhdr;	//dummy header to skip over the reading from the file
 	fp = fopen(filename, "r");
 	if(fp == NULL){
@@ -47,11 +49,24 @@ void displayBar(char filename[]){
 		return;
 	}
 	fread(&myhdr, sizeof(WAVHeader), 1, fp);
-	fread(&samples, sizeof(short), SAMPLERATE, fp);
+ 	fread(&samples, sizeof(short), SAMPLERATE, fp);
 	fclose(fp);
 	//all the samples of 1sec are read to the array samples[], we need to run a loop 80 times for 80 bars
 	//this loop will calculate a RMS value of 200 samples
+	clearScreen();
 	for(i=0; i<80; i++){
-		
-	}
-}
+		for(j=0, sum_200=0.0; j<200; j++){
+			sum_200 += samples[j+i*200]*samples[j+i*200];
+		}
+		rms_80[i] = sqrt(sum_200/200);
+		dB = 20*log10(rms_80[i]);
+#ifdef DEBUG
+		printf("RMS[%d] = %10.4f = %10.4fdB\n", i, rms_80[i], dB);
+#else
+		bar(i, dB);
+#endif
+	}	//end of for
+#ifdef COMM
+	sendToServer(rms_80);
+#endif
+}	//end of function

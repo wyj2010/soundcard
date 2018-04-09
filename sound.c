@@ -1,4 +1,5 @@
 #include "sound.h"
+#include "comm.h"
 #include <stdio.h>
 #include <math.h>
 
@@ -66,6 +67,21 @@ void displayBar(char filename[]){
 		bar(i, dB);
 #endif
 	}	//end of for
+	gotoxy(0,0);
+	printf("%c[1;%dm",ESC, 37);
+	fflush(stdout);
+	printf("%s   ", filename);
+	printf("%c[1;%dm",ESC, 32);
+	fflush(stdout);
+	printf("ch = %d   ", myhdr.numChannels);
+	printf("%c[1;%dm",ESC, 36);
+	fflush(stdout);
+	printf("SR = %d   ", myhdr.sampleRate);
+	printf("%c[1;%dm",ESC, 35);
+	fflush(stdout);
+	printf("dur = %ds\n", myhdr.subchunk2Size/(myhdr.sampleRate*myhdr.bitsPerSample/8));
+	printf("%c[1;%dm",ESC, 37);
+	fflush(stdout);
 #ifdef COMM
 	sendToServer(rms_80);
 #endif
